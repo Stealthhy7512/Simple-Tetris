@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-const char shapes[7][3][3] = {{{'x', 'x', 'x'}, {' ', ' ', ' '}, {' ', ' ', ' '}}, {{'x', 'x', ' '}, {'x', 'x', ' '}, {' ', ' ', ' '}}, 
+char shapes[7][3][3] = {{{'x', 'x', 'x'}, {' ', ' ', ' '}, {' ', ' ', ' '}}, {{'x', 'x', ' '}, {'x', 'x', ' '}, {' ', ' ', ' '}}, 
         {{'x', ' ', ' '}, {'x', ' ', ' '}, {' ', ' ', ' '}}, {{'x', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}}, 
         {{'x', ' ', ' '}, {'x', ' ', ' '}, {'x', 'x', ' '}}, {{'x', ' ', ' '}, {'x', ' ', ' '}, {'x', ' ', ' '}}, 
         {{' ', 'x', 'x'}, {'x', 'x', ' '}, {' ', ' ', ' '}}};
@@ -36,8 +36,8 @@ void placeShape(int coX, int coY, char* shape, char* playground, int size)
   int i, j;
   for(i = coY; i < coY+3; i++) {
     for(j = coX; j < coX+3; j++) {
-      if(*(shape + 3*i + j) != ' ')
-        *(playground + size*i + j) = *(shape + 3*i + j);
+      if(*(shape + 3*(i - coY) + (j - coX)) != ' ')
+        *(playground + size*i + j) = *(shape + 3*(i - coY) + (j - coX));
     }
   }
 }
@@ -68,6 +68,11 @@ const char getRandomInt()
   return random;
 }
 
+void checkLegal()
+{
+  
+}
+
 int main(void)
 {
   /*print(*shapes[0]);*/
@@ -84,6 +89,6 @@ int main(void)
   /*placeShape(0, 0, *shapes[1], playground, 5);*/
   printf("\n");
   placeShape(0, 0, *shapes[1], playground, 5);
-  placeShape(2, 1, *shapes[1], playground, 5);
+  placeShape(3, 2, *shapes[1], playground, 5);
   showPlayground(playground, 5);
 }
