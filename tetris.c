@@ -7,6 +7,15 @@ char shapes[7][3][3] = {{{'x', 'x', 'x'}, {' ', ' ', ' '}, {' ', ' ', ' '}}, {{'
         {{'x', ' ', ' '}, {'x', ' ', ' '}, {'x', 'x', ' '}}, {{'x', ' ', ' '}, {'x', ' ', ' '}, {'x', ' ', ' '}}, 
         {{' ', 'x', 'x'}, {'x', 'x', ' '}, {' ', ' ', ' '}}};
 
+char* createPlayground(int size)
+{
+  char* playground;
+  playground = (char*) malloc(size*size);
+  for(int i=0; i<size*size; i++)
+    *(playground+i) = ' ';
+  return playground;
+}
+
 void printShape(char* shapes)
 {
   int i, j;
@@ -31,29 +40,37 @@ char* rotateShape(char* shape)
   return transposed;
 }
 
-void placeShape(int coX, int coY, char* shape, char* playground, int size)
+int checkLegal(int coX, int coY, char* shape, char* playground, int size)
 {
   int i, j;
-  for(i = coY; i < coY+3; i++) {
-    for(j = coX; j < coX+3; j++) {
-      if(*(shape + 3*(i - coY) + (j - coX)) != ' ')
-        *(playground + size*i + j) = *(shape + 3*(i - coY) + (j - coX));
+    for(i = coY; i < coY+3; i++) {
+      for(j = coX; j < coX+3; j++) {
+        if(*(playground + size*i + j) != ' ') {
+          fprintf(stderr, "Illegal placement, try again.\n");
+          return 0;
+        }
+      }
     }
-  }
+  return 1;
 }
 
-char* createPlayground(int size)
+void placeShape(int coX, int coY, char* shape, char* playground, int size)
 {
-  char* playground;
-  playground = (char*) malloc(size*size);
-  for(int i=0; i<size*size; i++)
-    *(playground+i) = 'y';
-  return playground;
+  if(checkLegal(coX, coY, shape, playground, size)){
+    int i, j;
+    for(i = coY; i < coY+3; i++) {
+      for(j = coX; j < coX+3; j++) {
+        if(*(shape + 3*(i - coY) + (j - coX)) != ' ')
+          *(playground + size*i + j) = *(shape + 3*(i - coY) + (j - coX));
+      }
+    }
+  }
 }
 
 void showPlayground(char* playground, int size)
 {
   int i, j;
+  printf("Current playground:\n");
   for(i=0; i<size; i++) {
     for(j=0; j<size; j++)
       printf("%c", *(playground+size*i+j));
@@ -66,11 +83,6 @@ const char getRandomInt()
   srand(time(NULL));
   int random = rand() % 7;
   return random;
-}
-
-void checkLegal()
-{
-  
 }
 
 int main(void)
@@ -87,8 +99,9 @@ int main(void)
   showPlayground(playground, 5);
   printf("\n");
   /*placeShape(0, 0, *shapes[1], playground, 5);*/
-  printf("\n");
   placeShape(0, 0, *shapes[1], playground, 5);
-  placeShape(3, 2, *shapes[1], playground, 5);
+  showPlayground(playground, 5);
+  printf("\n");
+  placeShape(0, 0, *shapes[0], playground, 5);
   showPlayground(playground, 5);
 }
