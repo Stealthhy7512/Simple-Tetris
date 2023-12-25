@@ -4,11 +4,12 @@ TODO:
 -Recursive checkLegal function              Done
 -Implement rotation
 -Get user input to rotate/continue/quit
--Implement score                            Semi done
--Implement line deletion upon filling
+-Implement score                            Done
+-Implement line deletion upon filling       Done
 -Implement failure                          Done
 -De-clutter screen after each action        Done
 -Show position about to be placed           Done
+-Check input validity
 */
 
 #include <stdio.h>
@@ -17,8 +18,9 @@ TODO:
 
 char shapes[][3][3] = {{{'x', 'x', 'x'}, {' ', ' ', ' '}, {' ', ' ', ' '}}, {{'x', 'x', ' '}, {'x', 'x', ' '}, {' ', ' ', ' '}}, {{'x', ' ', ' '}, {'x', ' ', ' '}, {' ', ' ', ' '}}, {{'x', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}}, {{'x', ' ', ' '}, {'x', ' ', ' '}, {'x', 'x', ' '}}, {{'x', ' ', ' '}, {'x', ' ', ' '}, {'x', ' ', ' '}}, {{' ', 'x', 'x'}, {'x', 'x', ' '}, {' ', ' ', ' '}}};
 
-char* playground;
+char *playground;
 int size;
+int score = 0;
 
 const char getRandomInt()
 {
@@ -101,7 +103,6 @@ int placeShape(int coX, char *shape)
     }
     else
     {
-        /*printf("cort: %d\n", coY);*/
         int i, j;
         for (i = coY; i < coY + 3; i++)
         {
@@ -118,9 +119,10 @@ int placeShape(int coX, char *shape)
 void showPlayground()
 {
     int i, j;
-    printf("Current playground:\n");
+    printf("\nCurrent playground:\n");
     for (i = 0; i < size; i++)
         printf("-");
+
     printf("\n");
     for (i = 0; i < size; i++)
     {
@@ -128,9 +130,15 @@ void showPlayground()
             printf("%c", *(playground + size * i + j));
         printf("\n");
     }
+
     for (i = 0; i < size; i++)
         printf("-");
+
     printf("\n");
+    for (i = 0; i < size; i++)
+        printf("%d", i + 1);
+
+    printf("\n\n");
 }
 
 char *replacePlayground()
@@ -151,15 +159,49 @@ const int showRandomShape()
     return random;
 }
 
+void moveLines(int coY)
+{
+    int i, j;
+    for (i = coY - 1; i >= 0; i--)
+        for (j = 0; j < size; j++)
+            *(playground + size * (i + 1) + j) = *(playground + size * i + j);
+}
 
+void deleteLine()
+{
+    int *fullFlag = (int *)calloc(size, sizeof(int));
+    int i, j;
+    for (i = 0; i < size; i++)
+    {
+        for (j = 0; j < size; j++)
+            if (*(playground + size * i + j) == ' ')
+                fullFlag[i] = 1;
+    }
+    for (i = 0; i < size; i++)
+        for (j = 0; j < size; j++)
+            if (fullFlag[i] == 0)
+                *(playground + size * i + j) = ' ';
+    i = 1;
+    while (i < size)
+    {
+        if (fullFlag[i] == 0)
+        {
+            moveLines(i);
+            score += 5;
+        }
+        i++;
+    }
+}
 
 int main(int argc, char *argv[])
 {
     int i, coX, coY;
-    int score = 0;
     srand(time(NULL));
+
     printf("Enter game size: ");
     scanf("%d", &size);
+    system("cls");
+
     char *playground = createPlayground();
     while (1)
     {
@@ -167,9 +209,21 @@ int main(int argc, char *argv[])
         showPlayground();
         playground = replacePlayground();
         printf("Score: %d\n", score);
-        printf("Enter coordinate to place: ");
-        scanf("%d", &coX);
-        int result = placeShape(coX, *shapes[currentShape]);
+        do
+        {
+            printf("Input 0 to rotate shape and -1 to quit the game.\n");
+            printf("Enter coordinate to place: ");
+            scanf("%d", &coX);
+            if(coX == -1)
+                return 0;
+            /*else if(coX == 0)
+                rotateShape(currentShape);*/
+            else if (coX > size)
+                fputs("Impossible, try again.\n", stderr);
+        } while (coX > size);
+
+        int result = placeShape(coX - 1, *shapes[currentShape]);
+        deleteLine();
         if (result == 0)
         {
             printf("You lost the game!\n");
@@ -178,18 +232,6 @@ int main(int argc, char *argv[])
         score++;
         system("cls");
     }
-
-    /*showRandomShape();
-    showPlayground(playground, size);
-    char* playground = createPlayground(5);
-    showPlayground(playground, 5);
-    printf("\n");
-    placeShape(0, 0, *shapes[1], playground, 5);
-    placeShape(0, 0, *shapes[1], playground, 5);
-    showPlayground(playground, 5);
-    printf("\n");
-    placeShape(0, 0, *shapes[0], playground, 5);
-    showPlayground(playground, 5);*/
 
     system("pause");
     return 0;
