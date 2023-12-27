@@ -2,14 +2,17 @@
 TODO:
 -Fix placing                                Done
 -Recursive checkLegal function              Done
--Implement rotation
--Get user input to rotate/continue/quit
+-Implement rotation                         Done
+-Get user input to rotate/continue/quit     Done
 -Implement score                            Done
 -Implement line deletion upon filling       Done
 -Implement failure                          Done
--De-clutter screen after each action        Done
+-Declutter screen after each action         Done
 -Show position about to be placed           Done
--Check input validity
+-Check input validity                       Done
+-Implement menu                             Done
+-Implement hiScore                          Done
+-Implement <<shapeCorrect>>
 */
 
 #include <stdio.h>
@@ -21,6 +24,7 @@ char shapes[][3][3] = {{{'x', 'x', 'x'}, {' ', ' ', ' '}, {' ', ' ', ' '}}, {{'x
 char *playground;
 int size;
 int score = 0;
+int hiScore = 0;
 
 const char getRandomInt()
 {
@@ -151,12 +155,13 @@ char *replacePlayground()
     return playground;
 }
 
-const int showRandomShape()
+char *showRandomShape()
 {
     printf("Shape to place:\n");
     int random = getRandomInt();
-    printShape(*shapes[random]);
-    return random;
+    char *shape = *shapes[random];
+    printShape(shape);
+    return shape;
 }
 
 void moveLines(int coY)
@@ -193,11 +198,30 @@ void deleteLine()
     }
 }
 
-int main(int argc, char *argv[])
+void play();
+
+void showMenu()
+{
+    int input;
+    system("cls");
+    printf("Tetris Game\t\tHigh Score: %d\n", hiScore);
+    printf("\n[1] Play\n[2] Quit\n\n");
+    scanf("%d", &input);
+    switch (input)
+    {
+    case 1:
+        play();
+        break;
+
+    case 2:
+        exit(0);
+    }
+}
+
+void play()
 {
     int i, coX, coY;
-    srand(time(NULL));
-
+    system("cls");
     printf("Enter game size: ");
     scanf("%d", &size);
     system("cls");
@@ -205,33 +229,56 @@ int main(int argc, char *argv[])
     char *playground = createPlayground();
     while (1)
     {
-        int currentShape = showRandomShape();
+        char *currentShape = showRandomShape();
         showPlayground();
         playground = replacePlayground();
         printf("Score: %d\n", score);
         do
         {
-            printf("Input 0 to rotate shape and -1 to quit the game.\n");
+            printf("Input 0 to rotate shape and -1 to return to menu.\n");
             printf("Enter coordinate to place: ");
             scanf("%d", &coX);
-            if(coX == -1)
-                return 0;
-            /*else if(coX == 0)
-                rotateShape(currentShape);*/
+            if (coX == -1)
+            {
+                if (score > hiScore)
+                    hiScore = score;
+                showMenu();
+            }
+
+            else if (coX == 0)
+            {
+                currentShape = rotateShape(currentShape);
+                system("cls");
+                printf("Shape to place:\n");
+                printShape(currentShape);
+                showPlayground();
+                printf("Score: %d\n", score);
+            }
             else if (coX > size)
                 fputs("Impossible, try again.\n", stderr);
-        } while (coX > size);
+        } while (coX > size || coX == 0);
 
-        int result = placeShape(coX - 1, *shapes[currentShape]);
+        int result = placeShape(coX - 1, currentShape);
         deleteLine();
         if (result == 0)
         {
             printf("You lost the game!\n");
-            break;
+            if (score > hiScore)
+                hiScore = score;
+            system("pause");
+            showMenu();
         }
         score++;
         system("cls");
     }
+}
+
+int main(int argc, char *argv[])
+{
+    int input;
+    srand(time(NULL));
+
+    showMenu();
 
     system("pause");
     return 0;
