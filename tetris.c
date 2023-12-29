@@ -12,7 +12,8 @@ TODO:
 -Check input validity                       Done
 -Implement menu                             Done
 -Implement hiScore                          Done
--Implement <<shapeCorrect>>
+-Implement <<shapeAlign>>
+-Playground from NxN to MxN
 */
 
 #include <stdio.h>
@@ -22,11 +23,9 @@ TODO:
 char shapes[][3][3] = {{{'x', 'x', 'x'}, {' ', ' ', ' '}, {' ', ' ', ' '}}, {{'x', 'x', ' '}, {'x', 'x', ' '}, {' ', ' ', ' '}}, {{'x', ' ', ' '}, {'x', ' ', ' '}, {' ', ' ', ' '}}, {{'x', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}}, {{'x', ' ', ' '}, {'x', ' ', ' '}, {'x', 'x', ' '}}, {{'x', ' ', ' '}, {'x', ' ', ' '}, {'x', ' ', ' '}}, {{' ', 'x', 'x'}, {'x', 'x', ' '}, {' ', ' ', ' '}}};
 
 char *playground;
-int size;
-int score = 0;
-int hiScore = 0;
+int size, score = 0, hiScore = 0;
 
-const char getRandomInt()
+char getRandomInt()
 {
 
     int random = rand() % 7;
@@ -44,6 +43,41 @@ char *createPlayground()
     return playground;
 }
 
+void showPlayground()
+{
+    int i, j;
+    printf("\nCurrent playground:\n");
+    for (i = 0; i < size; i++)
+        printf("-");
+
+    printf("\n");
+    for (i = 0; i < size; i++)
+    {
+        for (j = 0; j < size; j++)
+            printf("%c", *(playground + size * i + j));
+        printf("\n");
+    }
+
+    for (i = 0; i < size; i++)
+        printf("-");
+
+    printf("\n");
+    for (i = 0; i < size; i++)
+        printf("%d", i + 1);
+
+    printf("\n\n");
+}
+
+char *replacePlayground()
+{
+    int i, j;
+    for (i = 0; i < size; i++)
+        for (j = 0; j < size; j++)
+            if (*(playground + size * i + j) == '*')
+                *(playground + size * i + j) = 'x';
+    return playground;
+}
+
 void printShape(char *shapes)
 {
     int i, j;
@@ -57,25 +91,52 @@ void printShape(char *shapes)
     }
 }
 
+char *showRandomShape()
+{
+    printf("Shape to place:\n");
+    int random = getRandomInt();
+    char *shape = *shapes[random];
+    printShape(shape);
+    return shape;
+}
+
+/*char *alignShape(char *shape)
+{
+    int i, j, count = 0;
+    int rowFlag[3] = {0};
+    char *aligned = (char *)calloc(3, sizeof(char));
+
+    for (j = 0; j < 3; j++)
+        for (i = 0; i < 3; i++)
+            if ((*(shape + 3 * i + j)) != ' ')
+                rowFlag[j] = 1;
+
+    for (i = 0; i < 3; i++)
+        if (rowFlag[i] == 0)
+            count++;
+
+    for (j = 0; j < 3; j++)
+        for (i = 0; i < 3; i++)
+        {
+            if (rowFlag[j] == 1 && j - count > 0)
+                *(aligned + 3 * i + j - count) = *(shape + 3 * i + j);
+            else
+                *(aligned + 3 * i + j) = *(shape + 3 * i + j);
+        }
+
+    return aligned;
+}*/
+
 char *rotateShape(char *shape)
 {
     int i, j;
-    char *transposed, *rotated;
-    transposed = (char *)malloc(9);
-    rotated = (char *)malloc(9);
+    char *transposed = (char *)malloc(9);
+
     for (i = 0; i < 3; i++)
-    {
         for (j = 0; j < 3; j++)
-        {
             *(transposed + 3 * i + j) = *(shape + 3 * j + i);
-        }
-    }
-    for (i = 0; i < 3; i++)
-    {
-        for (j = 0; j < 3; j++)
-            *(rotated + 3 * i + j) = *(transposed + 3 * i + 2 - j);
-    }
-    return rotated;
+    
+    return transposed;
 }
 
 int checkLegal(int coX, int coY, char *shape)
@@ -118,50 +179,6 @@ int placeShape(int coX, char *shape)
         }
     }
     return 1;
-}
-
-void showPlayground()
-{
-    int i, j;
-    printf("\nCurrent playground:\n");
-    for (i = 0; i < size; i++)
-        printf("-");
-
-    printf("\n");
-    for (i = 0; i < size; i++)
-    {
-        for (j = 0; j < size; j++)
-            printf("%c", *(playground + size * i + j));
-        printf("\n");
-    }
-
-    for (i = 0; i < size; i++)
-        printf("-");
-
-    printf("\n");
-    for (i = 0; i < size; i++)
-        printf("%d", i + 1);
-
-    printf("\n\n");
-}
-
-char *replacePlayground()
-{
-    int i, j;
-    for (i = 0; i < size; i++)
-        for (j = 0; j < size; j++)
-            if (*(playground + size * i + j) == '*')
-                *(playground + size * i + j) = 'x';
-    return playground;
-}
-
-char *showRandomShape()
-{
-    printf("Shape to place:\n");
-    int random = getRandomInt();
-    char *shape = *shapes[random];
-    printShape(shape);
-    return shape;
 }
 
 void moveLines(int coY)
